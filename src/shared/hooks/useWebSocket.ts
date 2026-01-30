@@ -67,11 +67,12 @@ export const useWebSocket = ({
     };
 
     socket.onmessage = (event) => {
+      console.log("WebSocket Message:", event);
       onMessageRef.current?.(event);
     };
 
     socketRef.current = socket;
-  }, [url, shouldConnect]); // Removed queryParams from dependency as it might be unstable too, but usually it's memoized. If needed we can ref it too. Assuming queryParams is stable or we want reconnection on change.
+  }, [url, shouldConnect]);
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {

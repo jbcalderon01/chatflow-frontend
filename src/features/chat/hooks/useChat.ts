@@ -16,16 +16,16 @@ export const useChat = (conversationId?: string | null) => {
   } = useGetConversationById(conversationId || "");
 
   useEffect(() => {
-    if (conversation?.messages && conversation.messages !== messages) {
+    if (conversation?.messages) {
       setMessages(conversation.messages);
     }
-  }, [conversation, messages]);
+  }, [conversation]);
 
   useEffect(() => {
-    if (dataConversations?.data && dataConversations.data !== conversations) {
+    if (dataConversations?.data) {
       setConversations(dataConversations.data);
     }
-  }, [dataConversations, conversations]);
+  }, [dataConversations]);
 
   return {
     conversations,

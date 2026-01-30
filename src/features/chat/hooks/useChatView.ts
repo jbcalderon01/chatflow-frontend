@@ -8,6 +8,7 @@ import { Conversation, Message } from "@/shared/api";
 
 export const useChatView = () => {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+
   const [isTyping, setIsTyping] = useState(false);
   const { user } = useAuth();
   const {
@@ -78,6 +79,7 @@ export const useChatView = () => {
   const handleReceiveConversation = useCallback(
     (conversation: Conversation) => {
       const isExist = conversations.find((c) => c.id === conversation.id);
+
       if (isExist) {
         setConversations((prev) =>
           prev.map((c) =>
@@ -88,7 +90,7 @@ export const useChatView = () => {
         setConversations((prev) => [...prev, conversation]);
       }
     },
-    [conversations, setConversations],
+    [conversations],
   );
 
   const handleOnMessage = useCallback(
@@ -129,7 +131,12 @@ export const useChatView = () => {
           break;
       }
     },
-    [handleIsTyping, handleReceiveMessage, handleReceiveConversation],
+    [
+      handleIsTyping,
+      handleReceiveMessage,
+      handleReceiveConversation,
+      selectedChatId,
+    ],
   );
 
   const ws = useWebSocket({
@@ -208,7 +215,7 @@ export const useChatView = () => {
   );
 
   useEffect(() => {
-    if (selectedChatId) {
+    if (selectedChatId && user?.role !== "ADMIN") {
       onJoinConversation();
     }
   }, [selectedChatId, onJoinConversation]);
