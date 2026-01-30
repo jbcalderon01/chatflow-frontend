@@ -1,84 +1,84 @@
 # ChatFlow Frontend 🚀
 
-Plataforma de gestión de leads inmobiliarios y chat en tiempo real diseñada para optimizar la comunicación entre agentes y prospectos.
+Real estate lead management platform and real-time chat designed to optimize communication between agents and prospects.
 
-## 🏗️ Resumen de la Arquitectura
+## 🏗️ Architecture Overview
 
-El proyecto está construido con **Next.js 15 (App Router)** siguiendo una estructura modular orientada a **dominios/features**.
+The project is built with **Next.js 15 (App Router)** following a modular structure oriented towards **domains/features**.
 
-- **`src/app`**: Definición de rutas y layouts globales.
-- **`src/features`**: Módulos independientes por funcionalidad (`auth`, `chat`, `dashboard`, `projects`). Cada uno encapsula sus propios componentes, hooks y lógica de vista.
-- **`src/shared`**: Capa de infraestructura transversal.
-  - **`api`**: Servicios REST (Axios), hooks de datos (TanStack Query) y tipos de dominio.
-  - **`context`**: Proveedores de estado global (Autenticación, QueryClient).
-  - **`hooks`**: Utilidades compartidas como el manejo de WebSockets y debouncing.
-  - **`lib`**: Configuraciones de librerías externas (Amplify, Axios).
+- **`src/app`**: Definition of global routes and layouts.
+- **`src/features`**: Independent modules by functionality (`auth`, `chat`, `dashboard`, `projects`). Each encapsulates its own components, hooks, and view logic.
+- **`src/shared`**: Cross-cutting infrastructure layer.
+  - **`api`**: REST services (Axios), data hooks (TanStack Query), and domain types.
+  - **`context`**: Global state providers (Authentication, QueryClient).
+  - **`hooks`**: Shared utilities such as WebSocket handling and debouncing.
+  - **`lib`**: External library configurations (Amplify, Axios).
 
-## 🛠️ Servicios del Backend
+## 🛠️ Backend Services
 
-La comunicación con el backend está centralizada en clases de servicios:
+Communication with the backend is centralized in service classes:
 
-1.  **`ConversationsService`**: Gestión de hilos de chat, lista de conversaciones y generación de resúmenes.
-2.  **`DashboardService`**: Obtención de métricas agregadas ( leads totales, mensajes sin leer, etc.).
-3.  **`ProjectsService`**: Catálogo de proyectos inmobiliarios disponibles.
-4.  **`UsersService`**: Gestión del perfil del agente autenticado.
+1.  **`ConversationsService`**: Management of chat threads, conversation lists, and summary generation.
+2.  **`DashboardService`**: Retrieval of aggregated metrics (total leads, unread messages, etc.).
+3.  **`ProjectsService`**: Catalog of available real estate projects.
+4.  **`UsersService`**: Management of the authenticated agent's profile.
 
-## 🧠 Lógica de IA (Smart Summary)
+## 🧠 AI Logic (Smart Summary)
 
-La plataforma incluye una funcionalidad de **resumen inteligente**.
+The platform includes a **smart summary** feature.
 
-- Localizada en `ConversationsService.getSummary`.
-- Permite a los agentes obtener una síntesis rápida de conversaciones largas, facilitando el seguimiento de prospectos sin leer todo el historial.
-- Implementado mediante una mutación de React Query (`useGenerateSummary`) para manejo de estados de carga.
+- Located in `ConversationsService.getSummary`.
+- Allows agents to obtain a quick synthesis of long conversations, facilitating prospect follow-up without reading the entire history.
+- Implemented via a React Query mutation (`useGenerateSummary`) for loading state management.
 
-## 📡 Decisiones Clave y Compensaciones (Trade-offs)
+## 📡 Key Decisions and Trade-offs
 
-- **WebSockets Nativos vs socket.io**: Se optó por una implementación nativa de WebSockets para reducir el tamaño del bundle y evitar la sobrecarga de librerías pesadas, manteniendo la latencia mínima necesaria para chat.
-- **TanStack Query para Estado de Datos**: Se utiliza para sincronizar el estado del servidor. Esto evita la necesidad de Redux/Zustand para datos que provienen de la API, delegando el cacheo y la invalidación a una librería especializada.
-- **AWS Amplify Auth**: Centralización de la identidad a través de Cognito, permitiendo un manejo seguro de tokens y sesiones con mínima lógica manual.
-- **Limpieza de Caché**: En el `AuthContext`, se implementó el vaciado forzado de la caché de QueryClient al hacer logout para garantizar que no queden datos sensibles visibles entre sesiones.
+- **Native WebSockets vs socket.io**: A native WebSocket implementation was chosen to reduce bundle size and avoid the overhead of heavy libraries, maintaining the minimum latency required for chat.
+- **TanStack Query for Data State**: Used to synchronize server state. This avoids the need for Redux/Zustand for data coming from the API, delegating caching and invalidation to a specialized library.
+- **AWS Amplify Auth**: Centralization of identity through Cognito, allowing secure token and session management with minimal manual logic.
+- **Cache Clearing**: In `AuthContext`, a forced clearing of the QueryClient cache was implemented upon logout to ensure no sensitive data remains visible between sessions.
 
-## 🌍 Rutas Privadas (Requieren autenticación)
+## 🌍 Private Routes (Require authentication)
 
-- `/dashboard`: Dashboard principal con listado de conversaciones.
-- `/chat`: Lista de conversaciones.
+- `/dashboard`: Main dashboard with conversation listing.
+- `/chat`: Conversation list.
 
-## 🌍 Rutas Públicas (No requieren autenticación)
+## 🌍 Public Routes (Do not require authentication)
 
-- `/`: Redirección a `/login`.
-- `/login`: Página de inicio de sesión.
-- `/projects`: Catálogo de proyectos inmobiliarios disponibles.
+- `/`: Redirection to `/login`.
+- `/login`: Login page.
+- `/projects`: Catalog of available real estate projects.
 
-## ⚙️ Configuración e Implementación
+## ⚙️ Configuration and Implementation
 
-### Variables de Entorno (`.env`)
+### Environment Variables (`.env`)
 
-El proyecto requiere las siguientes variables:
-
-```bash
-NEXT_PUBLIC_API_URL=              # Base URL de la API REST
-NEXT_PUBLIC_WEBSOCKET_URL=        # URL del Gateway de WebSockets
-NEXT_PUBLIC_COGNITO_USER_POOL_ID= # ID del Pool de Cognito
-NEXT_PUBLIC_COGNITO_CLIENT_ID=    # ID del Cliente de Cognito
-```
-
-### Ejecución
+The project requires the following variables:
 
 ```bash
-yarn install    # Instalar dependencias
-yarn dev        # Servidor de desarrollo
-yarn build      # Optimización para producción
+NEXT_PUBLIC_API_URL=              # REST API Base URL
+NEXT_PUBLIC_WEBSOCKET_URL=        # WebSocket Gateway URL
+NEXT_PUBLIC_COGNITO_USER_POOL_ID= # Cognito Pool ID
+NEXT_PUBLIC_COGNITO_CLIENT_ID=    # Cognito Client ID
 ```
 
-## 📝 Notas de Implementación
+### Execution
 
-- El componente `ChatWindow` bloquea el envío de mensajes si el rol del usuario no es el adecuado (ej. Admin vs Agente).
-- Los WebSockets se reconectan automáticamente basándose en el estado de autenticación del usuario (`shouldConnect: !!user`).
-- Cada agente tiene su propia lista de conversaciones, que se actualiza en tiempo real a través de WebSockets.
+```bash
+yarn install    # Install dependencies
+yarn dev        # Development server
+yarn build      # Production optimization
+```
+
+## 📝 Implementation Notes
+
+- The `ChatWindow` component blocks message sending if the user's role is not appropriate (e.g., Admin vs Agent).
+- WebSockets automatically reconnect based on the user's authentication status (`shouldConnect: !!user`).
+- Each agent has their own conversation list, which updates in real-time via WebSockets.
 
 ## 🚀 Features
 
-- `auth`: Gestión de autenticación y autorización.
-- `chat`: Gestión de conversaciones y chat en tiempo real.
-- `dashboard`: Dashboard principal con listado de conversaciones.
-- `projects`: Catálogo de proyectos inmobiliarios disponibles.
+- `auth`: Authentication and authorization management.
+- `chat`: Conversation and real-time chat management.
+- `dashboard`: Main dashboard with conversation listing.
+- `projects`: Catalog of available real estate projects.
